@@ -1,5 +1,8 @@
 # This is where you build your AI for the Chess game.
 
+#file containing chess game state and other helper functions
+import state as s
+
 from joueur.base_ai import BaseAI
 import random
 
@@ -52,30 +55,41 @@ class AI(BaseAI):
                   function.
         """
 
-        # Here is where you'll want to code your AI.
-
-        # We've provided sample code that:
-        #    1) prints the board to the console
-        #    2) prints the opponent's last move to the console
-        #    3) prints how much time remaining this AI has to calculate moves
-        #    4) makes a random (and probably invalid) move.
-
-        # 1) print the board to the console
-        self.print_current_board()
-
-        # 2) print the opponent's last move to the console
-        if len(self.game.moves) > 0:
-            print("Opponent's Last Move: '" + self.game.moves[-1].san + "'")
-
-        # 3) print how much time remaining this AI has to calculate moves
-        print("Time Remaining: " + str(self.player.time_remaining) + " ns")
-
-        # 4) make a random (and probably invalid) move.
-        random_piece = random.choice(self.player.pieces)
-        random_file = chr(ord("a") + random.randrange(8))
-        random_rank = random.randrange(8) + 1
-        random_piece.move(random_file, random_rank)
-
+        #self.print_current_board()
+        #print(self.game.fen)
+        
+        #make a random move
+        initial = s.state(self.game.fen)
+        moves = initial.getAllMoves()
+        randMove = random.randint(0, len(moves)-1)
+        move = moves[randMove].history[-1]
+        print("Moving piece located at", move[0], end="")
+        for piece in self.player.pieces:
+            if (piece.file, piece.rank) == move[0]:
+                print("     ", self.player.color, piece.type)
+                if len(move) == 2:
+                    piece.move(move[1][0], move[1][1])
+                else:
+                    if move[2] == 'q' or move[2] == 'Q':
+                        promote = "Queen"
+                    if move[2] == 'r' or move[2] == 'R':
+                        promote = "Rook"
+                    if move[2] == 'b' or move[2] == 'B':
+                        promote = "Bishop"
+                    if move[2] == 'n' or move[2] == 'N':
+                        promote = "Knight"
+                    
+                    piece.move(move[1][0], move[1][1], promote)
+                break
+        #print all moves that could be make by that piece
+        print("Possible moves by this piece")
+        for otherMove in moves:
+            if otherMove.history[-1][0] == move[0]:
+                print("  ", end="")
+                for coord in otherMove.history:
+                    print(coord, end = " ")
+                print("")
+        
         return True  # to signify we are done with our turn.
 
     def print_current_board(self):
