@@ -2,6 +2,7 @@
 
 #file containing chess game state and other helper functions
 import state as s
+import iddlm as mm
 
 from joueur.base_ai import BaseAI
 import random
@@ -58,11 +59,14 @@ class AI(BaseAI):
         #self.print_current_board()
         #print(self.game.fen)
         
+        if self.player.color == "White":
+            playerColor = 'w'
+        else:
+            playerColor = 'b'
+
         #make a random move
         initial = s.state(self.game.fen)
-        moves = initial.getAllMoves()
-        randMove = random.randint(0, len(moves)-1)
-        move = moves[randMove].history[-1]
+        move = mm.iddlm(initial, 3, playerColor).history[-1]
         print("Moving piece located at", move[0], end="")
         for piece in self.player.pieces:
             if (piece.file, piece.rank) == move[0]:
@@ -81,14 +85,6 @@ class AI(BaseAI):
                     
                     piece.move(move[1][0], move[1][1], promote)
                 break
-        #print all moves that could be make by that piece
-        print("Possible moves by this piece")
-        for otherMove in moves:
-            if otherMove.history[-1][0] == move[0]:
-                print("  ", end="")
-                for coord in otherMove.history:
-                    print(coord, end = " ")
-                print("")
         
         return True  # to signify we are done with our turn.
 

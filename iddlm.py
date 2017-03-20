@@ -1,4 +1,8 @@
 import state as s
+import random as r
+import time
+
+r.seed(time.time())
 
 #iterative deepening depth-limited minimax
 #  at the moment, just runs each level of depth limited minimax without using
@@ -25,16 +29,19 @@ def dlm(state, depth, maxp):
     
     moves = state.getAllMoves()
     
-    choice = None
+    choices = []
     best = -99999999999
+    #for each valid move, try to find the best one by using minimax
     for i, currentState in enumerate(moves):
         value = minv(currentState, depth-1, maxp)
         if value > best:
             best = value
-            choice = i
+            choices = [i]
+        elif value == best:
+            choices.append(i)
             
-    if choice != None:
-        return moves[choice]
+    #return a random move that has best value as determined by minimax
+    return moves[choices[r.randint(0, len(choices)-1)]]
 #end dlm
 
 
