@@ -651,3 +651,44 @@ class state:
 
         return validStates
     #end getting allmoves
+
+
+
+#heuristic function for minimax
+#  takes a state to be evaluated and a max player
+#  maxp should be either 'b' or 'w'
+def heuristic(state, maxp):
+
+    #if the current player has no moves to make (checkmate)
+    #  and the current player is NOT the max player, then the
+    #  state is really good, so return a high value
+    moves = state.getAllMoves()
+    if len(moves) == 0 and maxp != state.active:
+        return 9001
+    elif len(moves) == 0 and maxp == state.active:
+        #conversely, if the active player is the max player, the state is really bad
+        return -9001
+
+    #each piece has a value which contributes to a player's score
+    #  pawns:1
+    #  knight:3
+    #  bishop:3
+    #  rook:5
+    #  queens:9 
+    blackVal = len(state.pawns['b']) + (3*len(state.knights['b'])) + (3*len(state.bishops['b']))
+    blackVal += (5*len(state.rooks['b'])) + (9*len(state.queens['b']))
+                                                                    
+    whiteVal = len(state.pawns['w']) + (3*len(state.knights['w'])) + (3*len(state.bishops['w']))
+    whiteVal += (5*len(state.rooks['w'])) + (9*len(state.queens['w']))
+
+    #the value of the heuristic is the difference between the blackVal and whiteVal
+    heuristicVal = blackVal - whiteVal
+    
+    #if maxp is black, return heuristic val calculated above
+    if maxp == 'b':
+        return heuristicVal
+    else:
+        #if maxp is white, return -1*the heuristicVal
+        return -1*heuristicVal
+    
+
