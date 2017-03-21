@@ -64,8 +64,13 @@ class AI(BaseAI):
         else:
             playerColor = 'b'
 
-        #make a random move
-        initial = s.state(self.game.fen)
+        #construct the history of the current game
+        gameHistory = []
+        for turn in self.game.moves:
+            gameHistory.append(((turn.from_file, turn.from_rank), (turn.to_file, turn.to_rank)))
+
+        #make a move determined by iddl-minimax
+        initial = s.state(self.game.fen, history = gameHistory)
         move = mm.iddlm(initial, 3, playerColor).history[-1]
         print("Moving piece located at", move[0], end="")
         for piece in self.player.pieces:

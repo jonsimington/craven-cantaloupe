@@ -16,6 +16,88 @@ pieceNames = { 'b': ['p', 'q', 'k', 'n', 'b', 'r'],
 diagMods = [(1, 1), (-1, -1), (-1, 1), (1, -1)]
 straightMods = [ (-1, 0), (1, 0), (0, 1), (0, -1) ]
 
+#checks the movement of the piece along diagonals
+#  takes as agruments the position of the piece being moved
+#  the enemy color of the piece 
+#  the current chess board
+#  optional argument limited specifies if the piece can move 
+#  any number of spaces (False) or only one (True)
+def diagMoves(piece, enemy, board, limited = False):
+    x, y = convertXY(piece)
+    moves = []
+    for diag in diagMods:
+        if limited:
+            #explore one space
+            destx, desty = (x+diag[0], y+diag[1])
+            if inBounds(convertRF(destx, desty)):
+                obj = board[desty][destx]
+            else:
+                obj = None
+            if obj == "" or obj in pieceNames[enemy]:
+                moves.append((piece, convertRF(destx, desty)))
+        else:
+            #explore direction until non-empty space is found
+            destx, desty = (x+diag[0], y+diag[1])
+            if inBounds(convertRF(destx, desty)):
+                obj = board[desty][destx]
+            else:
+                obj = None
+            while obj == "":
+                moves.append((piece, convertRF(destx, desty)))
+                destx = destx + diag[0]
+                desty = desty + diag[1]
+                if inBounds(convertRF(destx, desty)):
+                    obj = board[desty][destx]
+                else:
+                    obj = None
+            #check one further for an enemy piece to capture
+            if obj in pieceNames[enemy]:
+                moves.append((piece, convertRF(destx, desty)))
+    
+    return moves
+#end diag mods
+    
+#checks the movement of the piece along straight paths
+#  takes as agruments the position of the piece being moved
+#  the enemy color of the piece 
+#  the current chess board
+#  optional argument limited specifies if the piece can move 
+#  any number of spaces (False) or only one (True)
+def straightMoves(piece, enemy, board, limited = False):
+    x, y = convertXY(piece)
+    moves = []
+    for straight in straightMods:
+        if limited:
+            #explore one space
+            destx, desty = (x+straight[0], y+straight[1])
+            if inBounds(convertRF(destx, desty)):
+                obj = board[desty][destx]
+            else:
+                obj = None
+            if obj == "" or obj in pieceNames[enemy]:
+              moves.append((piece, convertRF(destx, desty)))
+        else:
+            #explore direction until non-empty space is found
+            destx, desty = (x+straight[0], y+straight[1])
+            if inBounds(convertRF(destx, desty)):
+                obj = board[desty][destx]
+            else:
+                obj = None
+            while obj == "":
+                moves.append((piece, convertRF(destx, desty)))
+                destx = destx + straight[0]
+                desty = desty + straight[1]
+                if inBounds(convertRF(destx, desty)):
+                    obj = board[desty][destx]
+                else:
+                    obj = None
+    
+            #check one further for an enemy piece to capture
+            if obj in pieceNames[enemy]:
+                moves.append((piece, convertRF(destx, desty)))
+    return moves
+#end straight moves
+
 #changed file by an input amount. for example, fileMod("a", 3) gives "d" 
 def fileMod(File, mod):
     return chr(ord(File)+mod)
@@ -356,19 +438,8 @@ class state:
         moves = []
 
         for bishop in self.bishops[player]:
-            x, y = convertXY(bishop)
-            for diag in diagMods:
-                #explore a direction until a non-empty space is found
-                dest = (x+diag[0], y+diag[1])
-                obj = self.getObj(convertRF(*dest))
-                while obj=="":
-                    moves.append((bishop, convertRF(*dest)))
-                    dest = (dest[0]+diag[0], dest[1]+diag[1])
-                    obj = self.getObj(convertRF(*dest))
-                #after looking at all the blank spaces, look at the space immediately 
-                #after to see if it is an enemy
-                if obj in pieceNames[enemy]:
-                    moves.append((bishop, convertRF(*dest)))
+            moves.extend(diagMoves(bishop, enemy, self.board))
+
         return moves
     #end bishop moves
 
@@ -383,19 +454,8 @@ class state:
         moves = []
 
         for rook in self.rooks[player]:
-            x, y = convertXY(rook)
-            for straight in straightMods:
-                #explore a direction until a non-empty space is found
-                dest = (x+straight[0], y+straight[1])
-                obj = self.getObj(convertRF(*dest))
-                while obj=="":
-                    moves.append((rook, convertRF(*dest)))
-                    dest = (dest[0]+straight[0], dest[1]+straight[1])
-                    obj = self.getObj(convertRF(*dest))
-                #after looking at all the blank spaces, look at the space immediately 
-                #after to see if it is an enemy
-                if obj in pieceNames[enemy]:
-                    moves.append((rook, convertRF(*dest)))
+            moves.extend(straightMoves(rook, enemy, self.board))
+
         return moves
 
     #gets the queens moves:
@@ -409,33 +469,8 @@ class state:
         moves = []
 
         for queen in self.queens[player]:
-            x, y = convertXY(queen)
-            #explore diagonals
-            for diag in diagMods:
-                #explore a direction until a non-empty space is found
-                dest = (x+diag[0], y+diag[1])
-                obj = self.getObj(convertRF(*dest))
-                while obj=="":
-                    moves.append((queen, convertRF(*dest)))
-                    dest = (dest[0]+diag[0], dest[1]+diag[1])
-                    obj = self.getObj(convertRF(*dest))
-                #after looking at all the blank spaces, look at the space immediately 
-                #after to see if it is an enemy
-                if obj in pieceNames[enemy]:
-                    moves.append((queen, convertRF(*dest)))
-            #explore straigh directions
-            for straight in straightMods:
-                #explore a direction until a non-empty space is found
-                dest = (x+straight[0], y+straight[1])
-                obj = self.getObj(convertRF(*dest))
-                while obj=="":
-                    moves.append((queen, convertRF(*dest)))
-                    dest = (dest[0]+straight[0], dest[1]+straight[1])
-                    obj = self.getObj(convertRF(*dest))
-                #after looking at all the blank spaces, look at the space immediately 
-                #after to see if it is an enemy
-                if obj in pieceNames[enemy]:
-                    moves.append((queen, convertRF(*dest)))
+            moves.extend(diagMoves(queen, enemy, self.board))
+            moves.extend(straightMoves(queen, enemy, self.board))
 
         return moves
     #end queen moves
@@ -451,17 +486,9 @@ class state:
         moves = []
             
         king = self.kings[player][0]
-        x, y = convertXY(king)
-        for diag in diagMods:
-            dest = (x+diag[0], y+diag[1])
-            obj = self.getObj(convertRF(*dest))
-            if obj == "" or obj in pieceNames[enemy]:
-                moves.append((king, convertRF(*dest)))
-        for straight in straightMods:
-            dest = (x+straight[0], y+straight[1])
-            obj = self.getObj(convertRF(*dest))
-            if obj=="" or obj in pieceNames[enemy]:
-                moves.append((king, convertRF(*dest)))
+        moves.extend(diagMoves(king, enemy, self.board, limited=True))
+        moves.extend(straightMoves(king, enemy, self.board, limited=True))
+
 
         #checks for castling
         if player == 'w' and not self.check:
@@ -473,7 +500,7 @@ class state:
                     #check if the king moves throught check or an occupied space
                     if interState.inCheck(player) or self.getObj(move) !="":
                         test = False
-                if test:
+                if test: 
                      moves.append((king, ('g',1)))
             if self.castle["whiteQueen"]:
                 test = True
@@ -483,7 +510,7 @@ class state:
                     #check if the king moves throught check or an occupied space
                     if interState.inCheck(player) or self.getObj(move) !="":
                         test = False
-                if test:
+                if test and self.getObj(('b', 1))=="":
                      moves.append((king, ('c',1)))
         if player == 'b' and not self.check:
             if self.castle["blackKing"]:
@@ -504,12 +531,68 @@ class state:
                     #check if the king moves throught check or an occupied space
                     if interState.inCheck(player) or self.getObj(move) !="":
                         test = False
-                if test:
+                if test and self.getObj(('b', 8))=="":
                      moves.append((king, ('c', 8)))
 
 
         return moves
     #end king moves
+    
+    #checks if the current state results in a draw
+    def drawCheck(self):
+        #check if the opponent has no legal moves and is not in check
+        if state.inCheck == False and len(state.getAllMoves()) == 0:
+            return True
+
+        #check if checkmate is impossible
+        if len(self.queens['b']) == 0 and len(self.queens['w']) == 0 and \
+           len(self.rooks['b']) == 0 and len(self.rooks['w']) == 0 and \
+           len(self.pawns['b']) == 0 and len(self.pawns['w']) == 0:
+            #king vs king
+            if len(self.knights['b']) == 0 and len(self.knights['b']) == 0 and \
+               len(self.bishops['b']) == 0 and len(self.bishops['w']) == 0:
+                return True
+            #king vs king and knight
+            if len(self.bishops['b']) == 0 and len(self.bishops['w']) == 0:
+                if (len(self.knights['b']) == 0 and len(self.knights['w']) == 1) or \
+                   (len(self.knights['w']) == 0 and len(self.knights['b']) == 1):
+                    return True
+            #king vs king with any number of bishops that are all on the same color
+            #  bishops may be any color, as long as they are on the same colored tile
+            if len(self.knights['b'])==0 and len(self.knights['w'])==0:
+                allBishops = []
+                allBishops.extend(self.bishops['b'])
+                allBishops.extend(self.bishops['w'])
+                if len(allBishops) > 0:
+                    x0, y0 = convertXY(allBishops[0])
+                    color = (x0+y0)%2
+
+                    bishopFlag = True
+                    #two bishops on the same color if the sum of their x, y board coords
+                    # are both even or both odd
+                    for bishop in allBishops:
+                        x, y = convertXY(bishop)
+                        if color != ((x+y)%2):
+                            bishopFlag = False
+                            break
+                    if bishopFlag:
+                        return True
+
+        #simple three turn repetition rule
+        if len(self.history) >= 8:
+            firstTurns = self.history[-8:-4]
+            secondTurns = self.history[-4:]
+            repeatFlag = True
+            #check that each turn in the first four match those in the second four
+            for i in range(0, 4):
+                if firstTurns[i] != secondTurns[i] or len(firstTurns[i]) != 2:
+                    repeatFlag = False
+                    break
+            if repeatFlag:
+                return True
+
+        return False
+    #end draw check
 
     #checks if the passed player is in check
     def inCheck(self, enemy):
@@ -658,14 +741,13 @@ class state:
 #  takes a state to be evaluated and a max player
 #  maxp should be either 'b' or 'w'
 def heuristic(state, maxp):
-
-    #if the current player has no moves to make (checkmate)
+    #if the current player has no moves to make and is in check (checkmate) 
     #  and the current player is NOT the max player, then the
     #  state is really good, so return a high value
     moves = state.getAllMoves()
-    if len(moves) == 0 and maxp != state.active:
+    if len(moves) == 0 and maxp != state.active and state.inCheck(maxp): 
         return 9001
-    elif len(moves) == 0 and maxp == state.active:
+    elif len(moves) == 0 and maxp == state.active and state.inCheck(maxp):
         #conversely, if the active player is the max player, the state is really bad
         return -9001
 

@@ -47,6 +47,12 @@ def dlm(state, depth, maxp):
 
 #min function for minimax
 def minv(state, depth, maxp):
+    #test for draw
+    if state.drawCheck():
+        #a draw should only be an objective if the game
+        #appears to far lost to be winnable. hence the -4 value
+        return -4
+
     if depth == 0:
         return s.heuristic(state, maxp)
 
@@ -63,6 +69,12 @@ def minv(state, depth, maxp):
 
 #max function for minimax
 def maxv(state, depth, maxp):
+    #test for draw
+    if state.drawCheck():
+        #a draw should only be an objective if the game
+        #appears to far lost to be winnable. hence the -4 value
+        return -4
+
     if depth == 0:
         return s.heuristic(state, maxp)
 
