@@ -342,13 +342,17 @@ class state:
         #set check flag. This is from the new active players perspective, 
         #is it tells if the move puts the player who just moved into check
         #(which isnt an allowed move)
-        newState.check = newState.inCheck
+        newState.check = newState.inCheck(self.active)
 
         #pass the turn to other player and return the state
         if newState.active == 'b':
             newState.active = 'w'
         else:
             newState.active = 'b'
+
+        #update new state's history
+        newState.history.append(move)
+
         return newState
     #end child state generation
 
@@ -727,13 +731,35 @@ class state:
             #check if the moves places the current player in check
             newState = self.genState(move)
             if not newState.inCheck(player):
-                #add the move to the state's history and add it to 
-                #the valid children states
-                newState.history.append(move)
+                #add the move to the valid children
                 validStates.append(newState)
 
         return validStates
     #end getting allmoves
+
+    #a unique identifier for a state transition, containing a modified FEN string
+    #of a game state and the last move made to reach the state. To be used as keys 
+    #in the history table
+    def getID(self):
+        string = ""
+        for x in range(0,8):
+            for y in range(0,8):
+                if self.board[x][y] != "":
+                    string += self.board[x][y]
+                else: string += "0"
+            string += "/"
+        string += " {0} ".format(self.active)
+
+        if self.castle["whiteKing"]: string += "K"
+        if self.castle["whiteQueen"]: string += "Q"
+        if self.castle["blackKing"]: string += "k"
+        if self.castle["whiteQueen"]: string += "q"
+
+        if len(self.history) > 0:
+            string += " {0},{1}".format(self.history[-1][0], self.history[-1][1])
+
+        return string
+    #end getID
 
 
 

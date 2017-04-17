@@ -2,7 +2,7 @@
 
 #file containing chess game state and other helper functions
 import state as s
-import tlabiddlm as mm
+import minimax as mm
 
 from joueur.base_ai import BaseAI
 import random
@@ -71,7 +71,7 @@ class AI(BaseAI):
 
         #make a move determined by iddl-minimax
         initial = s.state(self.game.fen, history = gameHistory)
-        move = mm.tlabiddlm(initial, 4, playerColor).history[-1]
+        move = mm.htqtlabiddlm(initial, 4, playerColor).history[-1]
         print("Moving piece located at", move[0], end="")
         for piece in self.player.pieces:
             if (piece.file, piece.rank) == move[0]:
