@@ -19,7 +19,7 @@ class AI(BaseAI):
             str: The name of your Player.
         """
 
-        return "Chess Python Player"  # REPLACE THIS WITH YOUR TEAM NAME
+        return "Craven Cantaloupe"  # REPLACE THIS WITH YOUR TEAM NAME
 
     def start(self):
         """ This is called once the game starts and your AI knows its playerID
@@ -58,7 +58,7 @@ class AI(BaseAI):
 
         #self.print_current_board()
         #print(self.game.fen)
-        
+
         if self.player.color == "White":
             playerColor = 'w'
         else:
@@ -87,10 +87,10 @@ class AI(BaseAI):
                         promote = "Bishop"
                     if move[2] == 'n' or move[2] == 'N':
                         promote = "Knight"
-                    
+
                     piece.move(move[1][0], move[1][1], promote)
                 break
-        
+
         return True  # to signify we are done with our turn.
 
     def print_current_board(self):
